@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画修正指示ツール Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; }
+        #player-container iframe { width: 100% !important; height: 100% !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-2xl font-bold text-white">Video Feedback <span class="text-blue-500">Pro</span></h1>
+            <p class="text-gray-500 text-sm">クライアントごとの修正指示をスマートに管理</p>
+        </header>
+        
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl mb-8">
+            <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest">管理者メニュー（リンク発行）</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input id="videoUrl" type="text" placeholder="YouTube / Vimeo のURL" class="bg-gray-800 text-white px-4 py-3 rounded-xl border border-gray-700 focus:ring-2 focus:ring-blue-600 outline-none">
+                <input id="clientName" type="text" placeholder="クライアント名・案件名" class="bg-gray-800 text-white px-4 py-3 rounded-xl border border-gray-700 focus:ring-2 focus:ring-blue-600 outline-none">
+            </div>
+            <button onclick="loadAndGen()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all transform active:scale-95">
+                動画をセットして共有リンクを作成
+            </button>
+            
+            <div id="shareArea" class="hidden border-t border-gray-800 pt-6 mt-6 animate-fade-in">
+                <p class="text-xs text-blue-400 mb-2 font-bold">● クライアント送信用URL</p>
+                <div class="flex gap-2">
+                    <input id="shareUrl" type="text" readonly class="bg-black text-blue-300 px-4 py-3 rounded-xl flex-1 text-xs font-mono border border-gray-800">
+                    <button onclick="copyShareUrl()" class="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold text-sm shrink-0 transition-colors">コピー</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <div class="aspect-video bg-black rounded-2xl overflow-hidden border border-gray-800 shadow-2xl" id="player-container">
+                    <div class="flex items-center justify-center h-full text-gray-600 text-sm">動画がここに表示されます</div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl h-fit">
+                <button onclick="captureTime()" class="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-xl mb-6 border border-white/10 transition-colors font-bold flex items-center justify-center gap-2">
+                    📸 今の再生時間を取得
+                </button>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Time</label>
+                        <input id="timestamp" type="text" readonly class="w-full bg-gray-800 text-blue-400 p-4 rounded-xl font-mono text-2xl border-none" placeholder="00:00">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Comment</label>
+                        <textarea id="comment" rows="4" class="w-full bg-gray-800 text-white p-4 rounded-xl border-none focus:ring-2 focus:ring-blue-600" placeholder="修正内容を具体的に入力してください..."></textarea>
+                    </div>
+                    <button onclick="submitFeedback()" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">
+                        スプレッドシートに送信
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-16">
+            <div class="flex justify-between items-end mb-8">
+                <h2 class="text-xl font-bold">📋 修正指示の履歴</h2>
+                <button onclick="fetchList()" class="text-xs text-blue-500 hover:underline">最新の状態に更新</button>
+            </div>
+            <div id="feedbackList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 custom-scrollbar max-h-[800px] overflow-y-auto pr-2">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

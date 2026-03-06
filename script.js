@@ -1,29 +1,48 @@
+// 1. あなたのウェブアプリURLを貼り付け（※ここだけは自分のURLに書き換えてください！）
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbyIJXhcDcG-kDFE7PpBOhvYy9k0V0zAOXgnT17osNNvltF_as4vY3WoW7zIfJ2_hek28w/exec';
 
 var currentPlayer = null;
 var currentPlatform = '';
 
+// 画面を開いた瞬間にURLを確認する
 window.addEventListener('load', function() {
   var params = new URLSearchParams(window.location.search);
   var targetUrl = params.get('url');
   var targetClient = params.get('client');
-  if (targetUrl) document.getElementById('videoUrl').value = targetUrl;
-  if (targetClient) document.getElementById('clientName').value = targetClient;
-  if (targetUrl) loadVideo();
-  fetchList();
+  
+  if (targetUrl && targetClient) {
+    // 【クライアントが共有URLを開いた時の処理】
+    document.getElementById('videoUrl').value = targetUrl;
+    document.getElementById('clientName').value = targetClient;
+    
+    // 管理者メニューを非表示にする
+    var adminArea = document.getElementById('adminArea');
+    if (adminArea) adminArea.style.display = 'none';
+    
+    // 動画を読み込む
+    loadVideo();
+  }
+  
+  fetchList(); // リストを表示
 });
 
+// 管理用：動画をセットして共有URLを作る
 function loadAndGen() {
   var url = document.getElementById('videoUrl').value;
   var client = document.getElementById('clientName').value;
   if (!url || !client) return alert('動画URLとクライアント名の両方を入れてください');
+  
   loadVideo();
+  
+  // 今のページのURLに情報をくっつける
   var baseUrl = window.location.href.split('?')[0];
   var fullShareUrl = baseUrl + '?url=' + encodeURIComponent(url) + '&client=' + encodeURIComponent(client);
+  
   document.getElementById('shareUrl').value = fullShareUrl;
   document.getElementById('shareArea').classList.remove('hidden');
 }
 
+// URLをコピーする
 function copyShareUrl() {
   var copyTarget = document.getElementById('shareUrl');
   copyTarget.select();
@@ -31,10 +50,12 @@ function copyShareUrl() {
   alert("コピーしました！これをクライアントに送ってください。");
 }
 
+// 動画を読み込む
 function loadVideo() {
   var url = document.getElementById('videoUrl').value;
   var container = document.getElementById('player-container');
   container.innerHTML = ''; 
+
   if (url.indexOf('youtube.com') !== -1 || url.indexOf('youtu.be') !== -1) {
     currentPlatform = 'youtube';
     var videoId = url.indexOf('v=') !== -1 ? url.split('v=')[1].split('&')[0] : url.split('youtu.be/')[1].split('?')[0];
@@ -48,6 +69,7 @@ function loadVideo() {
   }
 }
 
+// 時間を取得する
 async function captureTime() {
   if (!currentPlayer) return alert('先に動画を読み込んでください');
   var seconds = (currentPlatform === 'youtube') ? currentPlayer.getCurrentTime() : await currentPlayer.getCurrentTime();
@@ -56,6 +78,7 @@ async function captureTime() {
   document.getElementById('timestamp').value = min + ":" + sec;
 }
 
+// データを送信する
 async function submitFeedback() {
   var time = document.getElementById('timestamp').value;
   var msg = document.getElementById('comment').value;
@@ -73,7 +96,7 @@ async function submitFeedback() {
     });
     document.getElementById('comment').value = '';
     alert('送信完了！');
-    setTimeout(fetchList, 2000);
+    setTimeout(fetchList, 2000); // 2秒後にリストを更新
   } catch (e) {
     alert('送信エラーが発生しました');
   } finally {
@@ -81,6 +104,7 @@ async function submitFeedback() {
   }
 }
 
+// リストを取得して表示する
 async function fetchList() {
   var list = document.getElementById('feedbackList');
   try {
@@ -89,8 +113,7 @@ async function fetchList() {
     list.innerHTML = '';
     
     data.reverse().forEach(function(item) {
-      // コメントが空っぽの行は無視する（これで「確認中」だらけにならない！）
-      if (!item.comment) return;
+      if (!item.comment) return; // 空のコメントは無視する
 
       var statusBadge = item.isDone ? 
         '<span class="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded border border-green-500/30">完了</span>' : 

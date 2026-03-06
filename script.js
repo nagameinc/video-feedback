@@ -1,10 +1,10 @@
 // ▼▼▼ あなたのSupabaseの情報を貼り付けてください ▼▼▼
-const SUPABASE_URL = 'https://dwzwrqfeabcdxbsqqmhh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_er0huDuAK294yBJKswQlMg_Gq1zmjbR';
+var SUPABASE_URL = 'https://dwzwrqfeabcdxbsqqmhh.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_er0huDuAK294yBJKswQlMg_Gq1zmjbR';
 // ▲▲▲ ▲▲▲ ▲▲▲
 
-// Supabaseの準備（スプレッドシートのGASの代わりです）
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabaseの準備（※varに変えたので二重エラーが起きなくなりました！）
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 var currentPlayer = null;
 var currentPlatform = '';
@@ -77,7 +77,7 @@ async function captureTime() {
   document.getElementById('timestamp').value = min + ":" + sec;
 }
 
-// 【Supabase版】データを送信する
+// データを送信する
 async function submitFeedback() {
   var time = document.getElementById('timestamp').value;
   var msg = document.getElementById('comment').value;
@@ -88,14 +88,13 @@ async function submitFeedback() {
   document.getElementById('submitBtn').innerText = "送信中...";
   
   try {
-    // Supabaseの feedbacks テーブルに書き込む
     const { data, error } = await supabase
       .from('feedbacks')
       .insert([
         { timestamp: time, comment: msg, video_url: vUrl, client_name: cName }
       ]);
 
-    if (error) throw error; // エラーがあれば中断
+    if (error) throw error; 
 
     document.getElementById('comment').value = '';
     alert('送信完了！');
@@ -108,16 +107,14 @@ async function submitFeedback() {
   }
 }
 
-// 【Supabase版】リストを取得して表示する
+// リストを取得して表示する
 async function fetchList() {
   var list = document.getElementById('feedbackList');
   var currentVideoUrl = document.getElementById('videoUrl').value;
   
   try {
-    // データベースから、今開いている動画URLと同じものだけを、新しい順で持ってくる
     let query = supabase.from('feedbacks').select('*').order('created_at', { ascending: false });
     
-    // もし画面に動画URLが入っていたら、それで絞り込む
     if (currentVideoUrl) {
       query = query.eq('video_url', currentVideoUrl);
     }

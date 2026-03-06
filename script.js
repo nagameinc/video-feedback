@@ -40,6 +40,9 @@ function loadAndGen() {
   
   document.getElementById('shareUrl').value = fullShareUrl;
   document.getElementById('shareArea').classList.remove('hidden');
+  
+  // ▼ 新しく動画をセットした時に、リストもその動画専用に絞り込んで更新する
+  fetchList();
 }
 
 // URLをコピーする
@@ -107,13 +110,23 @@ async function submitFeedback() {
 // リストを取得して表示する
 async function fetchList() {
   var list = document.getElementById('feedbackList');
+  // 今画面に入力されている動画のURLを取得
+  var currentVideoUrl = document.getElementById('videoUrl').value;
+  
   try {
     var res = await fetch(GAS_URL);
     var data = await res.json();
     list.innerHTML = '';
     
     data.reverse().forEach(function(item) {
-      if (!item.comment) return; // 空のコメントは無視する
+      if (!item.comment) return; // 空のコメントは無視
+      
+      // ▼▼▼ 今回追加した最大のポイント：別の動画のデータは表示しない ▼▼▼
+      // 画面に動画URLがセットされていて、かつスプレッドシートのURLと一致しない場合はスキップ
+      if (currentVideoUrl && item.videoUrl && item.videoUrl !== currentVideoUrl) {
+          return;
+      }
+      // ▲▲▲ これで完全に別の動画の指示とは切り離されます ▲▲▲
 
       var statusBadge = item.isDone ? 
         '<span class="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded border border-green-500/30">完了</span>' : 
